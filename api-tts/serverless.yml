@@ -33,6 +33,12 @@ functions:
        path: /v2
        method: get     
   
+  parte1:
+   handler: handler.parte1
+   events:
+    - httpApi:
+       path: /v1/tts
+       method: post 
 
 plugins:
   - serverless-better-credentials
