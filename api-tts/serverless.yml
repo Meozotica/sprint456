@@ -5,7 +5,34 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
+  region: us-east-1
 
 functions:
   hello:
+    name: sprint46
     handler: handler.hello
+
+  health:
+    handler: handler.health
+    events: 
+      - httpApi:
+          path: /
+          method: get
+
+  v1Description:
+   handler: handler.v1Description
+   events:
+    - httpApi:
+       path: /v1
+       method: get
+
+  v2Description:
+   handler: handler.v2Description
+   events:
+    - httpApi:
+       path: /v2
+       method: get     
+  
+
+plugins:
+  - serverless-better-credentials
