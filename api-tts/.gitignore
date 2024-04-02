@@ -17,5 +17,6 @@ var/
 *.egg
 node_modules/
 __pycache__/
+*.mp3
 # Serverless directories
 .serverless
