@@ -1,32 +1,38 @@
 import json
 import boto3
+import os
+
+polly = boto3.client("polly")
+s3    = boto3.client("s3")
 
 def generateMP3(text, bucket_name) :
-  s3     = boto3.resource("s3")
-  client = boto3.client("s3")
-  polly  = boto3.client('polly')
-  
-  response = polly.synthesize_speech(
-    OutputFormat = "mp3",
-    Text         = f"{text}",
-    VoiceId      = "Celine"
-  );
-  
-  fileName = "output.mp3";
-  audio = response.get("AudioStream");
-  
-  with open(fileName, "wb") as mp3_file:
-    audio.read()
-    mp3_file.write(audio.read())
+    response = polly.synthesize_speech(
+        OutputFormat = "mp3",
+        Text = text,
+        VoiceId = "Joanna"
+    )
+    
+    audio     = response["AudioStream"].read()
+    fileName  = "audio.mp3"
+    if os.path.isfile(fileName):
+        os.remove(fileName)
+            
+    
+    with open(fileName, "wb") as file: 
+        file.write(audio)
+        file.close()
 
-  for bucket in s3.buckets.all():
-    if bucket.name == bucket_name:
-        client.upload_file(
-          fileName, 
-          bucket.name,
-          "audio1"
-        );
+    if os.path.isfile(fileName):
+      for bucket in s3.list_buckets()["Buckets"]:
+        if bucket["Name"] == bucket_name:
+          s3.upload_file(fileName, bucket_name, fileName)
+          
+          print("sucesso");
+          break
 
-        print('sucesso')
-  
+# if __name__ == "__main__":
+#   generateMP3(
+#     "Hello world. My name is Wady paulino, student from Maputo Pedagogical Univerity. Actually im taking a graduation in IT and wish to work in Microsoft as a software engeneer",
+#     bucket_name="armazena-frases"
+#   )
   # return {"statusCode": 200, "body" : response["AudioStream"] }

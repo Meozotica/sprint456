@@ -47,6 +47,23 @@ functions:
        path: /v1/tts
        method: post 
 
+  parte2:
+    handler: handler.parte2
+    events: 
+      - httpApi:
+          path: /v2/tts
+          method: post
+
+  parte3:
+    handler: handler.parte3
+    events: 
+      - httpApi:
+          path: /v3/tts
+          method: post
+
+
 plugins:
   - serverless-better-credentials
   - serverless-offline
+
+ 

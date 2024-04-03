@@ -22,7 +22,7 @@ def createBucketMethod():
             "message": "Bucket created successfully!! Your function executed successfully!",
             "bucketName" : f"{bucket_name}"
         }        
-
+        
         return {"statusCode" : 200, "body" : json.dumps(body)}
     else:
         body = {
