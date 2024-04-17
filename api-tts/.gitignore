@@ -18,5 +18,6 @@ var/
 node_modules/
 __pycache__/
 *.mp3
+database/
 # Serverless directories
 .serverless
