@@ -6,13 +6,14 @@ provider:
   name: aws
   runtime: python3.9
   region: us-east-1
+  # timeout: 20
   iam:
     role: 
       statements: 
         - Effect: "Allow" 
           Action: 
             - "s3:*"
-          Resource: "*"
+          Resource: "arn:aws:s3:::armazena-frases/*"
         
 functions:
   hello:

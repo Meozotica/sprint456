@@ -1,36 +1,40 @@
 import json
 import boto3
 from modulos import generateAudio
- 
-from botocore.client import Config
 
-bucket_name = "armazena-frases"
+s3            = boto3.client('s3')
+bucket_name   = "armazena-frases"
     
 def createBucketMethod():
-    s3 = boto3.resource("s3") 
+    buckets_list = s3.list_buckets()["Buckets"]
     bucket_existe = False
     
-    for bucket in s3.buckets.all():
-        if bucket.name == bucket_name:
-            bucket_existe = not bucket_existe  
-        print(bucket.name)
-
-    if not bucket_existe:
-        s3.create_bucket(Bucket=bucket_name)
-
-        body = {
-            "message": "Bucket created successfully!! Your function executed successfully!",
-            "bucketName" : f"{bucket_name}"
-        }        
+    try:
         
-        return {"statusCode" : 200, "body" : json.dumps(body)}
-    else:
-        body = {
-            "message": "The bucket was already created!",
-            "bucketName" : f"{bucket_name}"
-        }
+        for bucket in buckets_list:
+            if bucket["Name"] == bucket_name:
+                bucket_existe = not bucket_existe
+            print(bucket["Name"])
+            
+        if bucket_existe:
+            body = {
+                "message": "The bucket was already created!",
+                "bucketName" : f"{bucket_name}"
+            }
+                
+            return {"statusCode" : 200, "body" : json.dumps(body)}
+        else:
+            s3.create_bucket(Bucket=bucket_name)
+            
+            body = {
+                "message": "Bucket created successfully!! Your function executed successfully!",
+                "bucketName" : f"{bucket_name}"
+            }        
 
-        return {"statusCode" : 200, "body" : json.dumps(body)}
+            return {"statusCode" : 200, "body" : json.dumps(body)}
+           
+    except Exception as e:
+        print(e)
     
 # ================================ SERVERLESS FUNCIONS ================================
 
@@ -72,7 +76,7 @@ def parte1(event, context):
         "param" : event["queryStringParameters"]["q"]
     }
     
-    generateAudio.generateMP3(body["param"], bucket_name);
+    return generateAudio.generateMP3(body["param"], bucket_name);
 
 
 
