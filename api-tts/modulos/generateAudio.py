@@ -1,13 +1,15 @@
 import json
 import boto3
 import os
+import random
+
 
 polly = boto3.client("polly")
 s3    = boto3.client("s3")
-  
+
 
 # Busca o link do objecto(áudio) no bucket 
-def generateBucketURL(bucket_name, fileName) :
+def generateBucketObjectURL(bucket_name, fileName) :
   return (
       s3.generate_presigned_url(
       'get_object', 
@@ -16,48 +18,57 @@ def generateBucketURL(bucket_name, fileName) :
     )
   )
   
-# Busca a data de criacao do obejcto(áudio)
+# Busca a data de criacao do objecto(áudio)
 def getCreationDate(bucket_name, fileName) :
   date = s3.get_object(Bucket=bucket_name, Key=fileName)
 
   return date['LastModified'];
 
 # Gera audio do texto passado como parámetro
-def generateMP3(text, bucket_name) :
-  response = polly.synthesize_speech(
+def generateMP3(RequestBody, bucket_name, fileName) :
+    response = polly.synthesize_speech(
       OutputFormat = "mp3",
-      Text = text,
+      Text = RequestBody["param"],
       VoiceId = "Joanna"
-  )
+    )
   
-  audio     = response["AudioStream"].read()
-  fileName  = "audio.mp3"
-  
-  if os.path.isfile(fileName):
-      os.remove(fileName)
-          
-  with open(fileName, "wb") as file: 
-      file.write(audio)
-      file.close()
+    audio = response["AudioStream"].read()
+    
+    newFileName = fileName
+    loopCond    = True
+    object_list = s3.list_objects(Bucket=bucket_name)["Contents"]
 
-  for bucket in s3.list_buckets()["Buckets"]:
-    if bucket["Name"] == bucket_name and os.path.isfile(fileName):
-      try:
+    while(loopCond) :
+        randomFileName = f"{fileName + str(random.randint(0, 50))}.mp3"
         
-        s3.upload_file(fileName, bucket_name, fileName)
-        print("Sucesso");
+        print(randomFileName)
+        if not any(obj["Key"] == randomFileName for obj in object_list) :
+            newFileName = randomFileName
+            loopCond = False
+                  
+    with open(newFileName, "wb") as file: 
+        file.write(audio)
+        file.close()
 
-        url  = generateBucketURL(bucket_name, fileName)
-        date = getCreationDate(bucket_name, fileName) 
-        print(f"Link: {url} \n Creation date: {date}");
+    for bucket in s3.list_buckets()["Buckets"]:
+        if bucket["Name"] == bucket_name and os.path.isfile(newFileName) :
+            try:
+                
+                s3.upload_file(newFileName, bucket_name, newFileName)
+                print("Sucesso");
 
-        body = {
-          "received_phrase": f"{text}",
-          "url_to_audio"   : f"{url}",
-          "created_audio"  : f"{date}"
-        }
+                url  = generateBucketObjectURL(bucket_name, newFileName)
+                date = getCreationDate(bucket_name, newFileName) 
+                text = RequestBody["param"]
+                print(f"Link: {url} \n Creation date: {date}");
 
-        return {"statusCode": 200, "body": json.dumps(body)}
-      
-      except Exception as e:
-        print(e);
+                responseBody = {
+                    "received_phrase": f"{text}",
+                    "url_to_audio"   : f"{url}",
+                    "created_audio"  : f"{date}"
+                }
+
+                return {"statusCode": 200, "body": json.dumps (responseBody)}
+            
+            except Exception as e:
+                print(e);

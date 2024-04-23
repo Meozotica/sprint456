@@ -6,15 +6,20 @@ provider:
   name: aws
   runtime: python3.9
   region: us-east-1
-  # timeout: 20
+  timeout: 29
   iam:
-    role: 
-      statements: 
-        - Effect: "Allow" 
-          Action: 
-            - "s3:*"
-          Resource: "*"
-        
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:us-east-1:381492005869:table/armazena-frases"
+
 functions:
   hello:
     name: sprint46
@@ -67,4 +72,21 @@ plugins:
   - serverless-better-credentials
   - serverless-offline
 
- 
+# resources:
+#   Resources:
+#     MyDynamoDBTable:
+#       Type: AWS::DynamoDB::Table
+#       Properties:
+#         TableName: armazena-frases
+
+#   iamRoleStatements:
+#     - Effect: Allow
+#       Action:
+#         - dynamodb:DescribeTable
+#         - dynamodb:Query
+#         - dynamodb:Scan
+#         - dynamodb:GetItem
+#         - dynamodb:PutItem
+#         - dynamodb:UpdateItem
+#         - dynamodb:DeleteItem
+#       Resource: "arn:aws:dynamodb:us-east-1:381492005869:table/armazena-frases"
