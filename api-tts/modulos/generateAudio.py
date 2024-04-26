@@ -39,7 +39,7 @@ def generateMP3(RequestBody, bucket_name, fileName) :
     object_list = s3.list_objects(Bucket=bucket_name)["Contents"]
 
     while(loopCond) :
-        randomFileName = f"{fileName + str(random.randint(0, 50))}.mp3"
+        randomFileName = f"{fileName + str(random.randint(0, 50))}.mp3" 
         
         print(randomFileName)
         if not any(obj["Key"] == randomFileName for obj in object_list) :
@@ -60,7 +60,6 @@ def generateMP3(RequestBody, bucket_name, fileName) :
                 url  = generateBucketObjectURL(bucket_name, newFileName)
                 date = getCreationDate(bucket_name, newFileName) 
                 text = RequestBody["param"]
-                print(f"Link: {url} \n Creation date: {date}");
 
                 responseBody = {
                     "received_phrase": f"{text}",
@@ -68,7 +67,7 @@ def generateMP3(RequestBody, bucket_name, fileName) :
                     "created_audio"  : f"{date}"
                 }
 
-                return {"statusCode": 200, "body": json.dumps (responseBody)}
+                return {"statusCode": 200, "body": json.dumps(responseBody)}
             
             except Exception as e:
                 print(e);

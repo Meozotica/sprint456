@@ -21,10 +21,6 @@ provider:
           Resource: "arn:aws:dynamodb:us-east-1:381492005869:table/armazena-frases"
 
 functions:
-  hello:
-    name: sprint46
-    handler: handler.hello
-
   health:
     handler: handler.health
     events: 
@@ -67,10 +63,36 @@ functions:
           path: /v3/tts
           method: post
 
+  deployTest:
+    handler: handler.deployTest
+    events:
+      - httpApi:
+          path: /deployTest
+          method: post
+
 
 plugins:
   - serverless-better-credentials
   - serverless-offline
+
+resources:
+  Resources:
+    MyDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: "armazena-frases"
 
 # resources:
 #   Resources:

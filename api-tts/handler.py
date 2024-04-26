@@ -91,16 +91,5 @@ def parte2(event, context) :
     body =  {
         "param" : event["queryStringParameters"]["q"]
     }
-    
-    return DBHandler.putItemToDatabase(body["param"])
-    
-    # reponse =  {
-    #     "received_phrase": f"",
-    #     "url_to_audio": "https://meu-buckect/audio-xyz.mp3",
-    #     "created_audio": "02-02-2023 17:00:00",
-    #     "unique_id": "123456"
-    # }
 
-
-
-
+    return DBHandler.putItemToDatabase(body)
