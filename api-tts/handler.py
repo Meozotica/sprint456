@@ -88,8 +88,16 @@ def parte1(event, context):
 
 
 def parte2(event, context) :
+
     body =  {
         "param" : event["queryStringParameters"]["q"]
     }
 
     return DBHandler.putItemToDatabase(body)
+
+def parte3(event, context):
+    body =  {
+        "param" : event["queryStringParameters"]["q"]
+    }
+    
+    return DBHandler.checkIfPhraseExists(body)

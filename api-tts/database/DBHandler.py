@@ -1,15 +1,28 @@
 import json
 import random
 import boto3
+import re
 
 import handler
-
 from modulos import generateAudio 
 
 dynamo = boto3.client("dynamodb")
-databaseName = "arn:aws:dynamodb:us-east-1:381492005869:table/armazena-frases"
+s3     = boto3.client("s3")
+
+databaseName = bucket_name = "armazena-frases"
+fileName     = "audio"
+
+# Retorna a url do objecto no bucket
+def generateBucketObjectURL(bucket_name, fileName) :
+  return (
+      s3.generate_presigned_url(
+      'get_object', 
+      Params={'Bucket':bucket_name, 'Key':fileName},
+      ExpiresIn=3600
+    )
+  )
   
-  
+
 # Gera um id aleatorio para cada frase adiciona na BD
 def generateId() :
     itemExists = True
@@ -30,7 +43,7 @@ def generateId() :
         print(item)
         if "Item" not in item :
             print(f"ID Generated {id}")
-            return id;
+            return id
         
 
 # Adiciona as informacoes sobre o audio gerado e o bucket em que o audio está armazenado
@@ -44,8 +57,8 @@ def putItemToDatabase(requestBody) :
     print(createdAudio)
 
     phrase        = createdAudio["received_phrase"]
-    audio_url     = createdAudio["url_to_audio"]
-    creation_date = createdAudio["created_audio"]
+    audio_url     = createdAudio["url_to_audio"   ]
+    creation_date = createdAudio["created_audio"  ]
     
     item = {
         "id" : {
@@ -55,7 +68,7 @@ def putItemToDatabase(requestBody) :
             "S": f"{phrase}"
         }, 	
         "bucket_link" : {
-            "S": f"link"
+            "S": f"{audio_url}"
         }
     }
     
@@ -71,3 +84,28 @@ def putItemToDatabase(requestBody) :
     print(response)
 
     return {"statusCode": 200, "body": json.dumps(responseBody)} 
+
+def checkIfPhraseExists(RequestBody):
+    tabelas    = dynamo.scan(TableName=bucket_name)["Items"]
+    phrase     = RequestBody["param"]
+    itemExists = False
+
+    for tabela in tabelas :
+        if (tabela["phrase"]['S'] == phrase) :
+            id           = tabela["id"]["S"]
+            url          = tabela["bucket_link"]["S"]
+            audioname    = re.split(r'[/|?]', url)[0]
+            itemExists   = not itemExists
+
+            responseBody =  {
+                "received_phrase": f"{phrase}",
+                "url_to_audio"   : f"{url}",
+                "created_audio"  : f"{generateAudio.getCreationDate(bucket_name, audioname)}",
+                "unique_id"      : f"{id}"
+            }
+
+            return {"statusCode" : 200, "body" : json.dumps(responseBody)}
+            
+    if not itemExists :
+        return putItemToDatabase(RequestBody)        
+

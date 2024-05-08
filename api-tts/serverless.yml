@@ -63,12 +63,12 @@ functions:
           path: /v3/tts
           method: post
 
-  deployTest:
-    handler: handler.deployTest
-    events:
-      - httpApi:
-          path: /deployTest
-          method: post
+  # deployTest:
+  #   handler: handler.deployTest
+  #   events:
+  #     - httpApi:
+  #         path: /deployTest
+  #         method: post
 
 
 plugins:
